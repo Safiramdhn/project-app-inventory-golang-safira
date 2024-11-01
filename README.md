@@ -1,0 +1,1 @@
+# project-app-inventory-golang-safira
