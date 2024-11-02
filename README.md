@@ -14,22 +14,26 @@ PostgreSQL
 github.com/lib/pq
 ## Installation
 **Clone the repository**
-`git clone https://github.com/Safiramdhn/project-app-inventory-golang-safira.git`
+```git clone https://github.com/Safiramdhn/project-app-inventory-golang-safira.git```
 **Set up the database**
-`psql -U postgres -d inventory < inventory.sql`
+```psql -U postgres -d inventory < inventory.sql```
 **Run the application**
-`go run main.go`
+```go run main.go```
 
 ## API Endpoints & Examples
 ### Authentication
 1. Login
-`// body.json
+   
+```
+// body.json
 {
     "username": "admin",
     "password": "adminpassword"
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Logged in successfully",
   "data": {
@@ -37,16 +41,20 @@ Response:
     "username": "admin",
     "role": "admin"
   }
-}`
-2. Logout
+}
+```
+3. Logout
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Logged out successfully"
-}`
+}
+```
 ### Items
 1. Add Item
-`// body.json
+```
+// body.json
 {
     "name": "New Laptop",
     "category": {
@@ -57,26 +65,32 @@ Response:
     },
     "quantity": 10,
     "price": 1000000
-}`
+}
+```
 Response:
-`{
+```{
   "statusCode": 201,
   "message": "Item added successfully"
-}`
+}
+```
 2. Update Item
-`// body.json
+```// body.json
 {
     "id": 1,
     "name": "Updated Laptop",
     "price": 1500000
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Item updated successfully"
-}`
+}
+```
 3. Delete Item
-`// body.json
+```
+// body.json
 {
     "id": 1
 }`
@@ -84,14 +98,17 @@ Response:
 `{
   "statusCode": 200,
   "message": "Item deleted successfully"
-}`
+}
+```
 4. Get Items (with pagination)
-`{
+```
+{
     "page": 1,
     "per_page": 10
-}`
+}
+```
 Response:
-`{
+```{
   "statusCode": 200,
   "message": "Items retrieved successfully",
   "data": [
@@ -116,32 +133,42 @@ Response:
     }
     // ... more items
   ]
-}`
+}
+```
 ### Categories
 Create Category
-`// body.json
+```
+// body.json
 {
     "name": "New Category"
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Category created successfully"
-}`
+}
+```
 Locations
-`// body.json
+```
+// body.json
 {
     "name": "New Warehouse",
     "address": "123 Business Street"
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Location created successfully"
-}`
+}
+```
 ### Transactions
 1. Create Transaction
-`// body.json
+```
+// body.json
 {
     "item": {
         "id": 1
@@ -149,14 +176,18 @@ Response:
     "quantity": 5,
     "type": "OUT",
     "description": "Sold to customer"
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Transaction created successfully"
-}`
+}
+```
 2. Get Transactions (with filter)
-`{
+```
+{
     "type": "OUT",
     "item": {
         "name": "Laptop"
@@ -165,9 +196,11 @@ Response:
         "page": 1,
         "per_page": 10
     }
-}`
+}
+```
 Response:
-`{
+```
+{
   "statusCode": 200,
   "message": "Transactions retrieved successfully",
   "data": [
@@ -191,7 +224,8 @@ Response:
     }
     // ... more transactions
   ]
-}`
+}
+```
 ## Response Status Codes
 Status  |  Code	Description
 200	    |  Success
@@ -200,11 +234,12 @@ Status  |  Code	Description
 401     |  Unauthorized
 500     |  Internal Server Error
 Error Responses
-`{
+```
+{
   "statusCode": 400,
-  "message": "Error message here",
-  "data": null
-}`
+  "message": "Error message here"
+}
+```
 ## Role Access
 ### Admin
 - Manage items (CRUD)
