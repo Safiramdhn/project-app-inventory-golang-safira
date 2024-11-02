@@ -21,12 +21,12 @@ func NewItemRepositoryDB(db *sql.DB) *ItemRepositoryDB {
 
 func (repo *ItemRepositoryDB) GetByID(id int) (*models.Item, error) {
 	var item models.Item
-	sqlStatement := `SELECT id, name, quantity, price FROM items WHERE id = $1`
+	sqlStatement := `SELECT id, name, quantity, price, category_id, location_id FROM items WHERE id = $1 AND status = 'active'`
 	row := repo.DB.QueryRow(sqlStatement, id)
 
-	err := row.Scan(&item.ID, &item.Name, &item.Quantity, item.Price)
+	err := row.Scan(&item.ID, &item.Name, &item.Quantity, &item.Price, &item.CategoryId, &item.LocationId)
 	if err == sql.ErrNoRows {
-		return nil, err
+		return nil, errors.New("item not found")
 	} else if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (repo *ItemRepositoryDB) GetByID(id int) (*models.Item, error) {
 
 func (repo *ItemRepositoryDB) GetAll() ([]models.Item, error) {
 	var items []models.Item
-	sqlStatement := `SELECT id, name, quantity, price FROM items`
+	sqlStatement := `SELECT id, name, quantity, price FROM items WHERE status = 'active' ORDER BY created_at ASC`
 	rows, err := repo.DB.Query(sqlStatement)
 	if err != nil {
 		return nil, err

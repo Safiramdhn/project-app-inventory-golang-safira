@@ -11,9 +11,12 @@ func AdminHandler(db *sql.DB, endpoint string) {
 	case "update_item":
 		UpdateItemHandler(db)
 	case "delete_item":
+		DeleteItemHandler(db)
 	case "search_item":
 	case "view_all_items":
+		GetItemsHandler(db)
 	case "get_item_by_id":
+		GetItemByIDHandler(db)
 	}
 }
 
