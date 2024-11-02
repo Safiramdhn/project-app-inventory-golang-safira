@@ -7,7 +7,7 @@ import (
 
 func InitDb() (*sql.DB, error) {
 	// Open the database
-	connStr := "host=localhost user=postgres password=postgres dbname=elearning sslmode=disable"
+	connStr := "host=localhost user=postgres password=postgres dbname=inventory sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 
 	return db, err

@@ -8,6 +8,12 @@ CREATE TYPE "status_enum" AS ENUM (
 	'deleted'
 )
 
+CREATE TABLE "admins" (
+	id	serial PRIMARY KEY,
+	username varchar,
+	password varchar
+)
+
 CREATE TABLE "categories" (
   "id" serial PRIMARY KEY,
   "name" varchar(255),
@@ -54,6 +60,8 @@ ALTER TABLE "items" ADD FOREIGN KEY ("location_id") REFERENCES "locations" ("id"
 
 ALTER TABLE "transactions" ADD FOREIGN KEY ("item_id") REFERENCES "items" ("id");
 
+INSERT INTO admins (username, password) VALUES ('admin', 'adminpassword');
+
 INSERT INTO categories (name) VALUES
 ('Electronics'),
 ('Raw Materials'),
@@ -69,7 +77,7 @@ INSERT INTO locations (name, address) VALUES
 
 SELECT * FROM locations
 
-INSERT INTO items (name, category_id, location_id, quantity,) VALUES
+INSERT INTO items (name, category_id, location_id, quantity) VALUES
 ('Laptop', 1, 1, 15),
 ('Smartphone', 1, 1, 25),
 ('Steel Sheets', 2, 1, 50),
