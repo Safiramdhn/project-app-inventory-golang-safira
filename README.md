@@ -14,11 +14,17 @@ PostgreSQL
 github.com/lib/pq
 ## Installation
 **Clone the repository**
-```git clone https://github.com/Safiramdhn/project-app-inventory-golang-safira.git```
+```
+git clone https://github.com/Safiramdhn/project-app-inventory-golang-safira.git
+```
 **Set up the database**
-```psql -U postgres -d inventory < inventory.sql```
+```
+psql -U postgres -d inventory < inventory.sql
+```
 **Run the application**
-```go run main.go```
+```
+go run main.go
+```
 
 ## API Endpoints & Examples
 ### Authentication
