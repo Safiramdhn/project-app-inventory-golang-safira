@@ -237,3 +237,51 @@ func GetItemByIDHandler(db *sql.DB) error {
 	fmt.Println(string(responseJson))
 	return nil
 }
+
+func SearchItemsHandler(db *sql.DB) error {
+	var item_input models.Item
+	var response models.Response
+	repoDB := struct {
+		DB *sql.DB
+	}{
+		DB: db,
+	}
+
+	file, err := os.OpenFile("body.json", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println("Open file error message: ", err)
+		return nil
+	}
+	defer file.Close()
+
+	// Check if the file is empty
+	fileInfo, err := file.Stat()
+	if err != nil {
+		fmt.Println("File stat error: ", err)
+		return nil
+	}
+
+	if fileInfo.Size() > 0 {
+		decoder := json.NewDecoder(file)
+
+		if err := decoder.Decode(&item_input); err != nil && err != io.EOF {
+			fmt.Println("Decode error message: ", err)
+		}
+	}
+
+	itemService := services.NewItemService(repoDB)
+	itemsFound, err := itemService.SearchItems(item_input)
+	if err != nil {
+		errMessage := fmt.Sprintf("Error searching items: %v", err)
+		response = models.Response{StatusCode: 400, Message: errMessage, Data: nil}
+	} else {
+		errMessage := "Items retrieved successfully"
+		response = models.Response{StatusCode: 200, Message: errMessage, Data: itemsFound}
+	}
+	responseJson, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshaling JSON: ", err)
+	}
+	fmt.Println(string(responseJson))
+	return nil
+}

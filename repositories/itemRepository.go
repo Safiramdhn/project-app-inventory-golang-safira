@@ -117,7 +117,7 @@ func (repo *ItemRepositoryDB) Search(item models.Item) ([]models.Item, error) {
 	fields := make(map[string]interface{})
 
 	if item.Name != "" {
-		fields["name"] = item.Name
+		fields["name"] = "%" + item.Name + "%"
 	}
 	if item.Quantity != 0 {
 		fields["quantity"] = item.Quantity
@@ -125,6 +125,8 @@ func (repo *ItemRepositoryDB) Search(item models.Item) ([]models.Item, error) {
 	if item.Price != 0 {
 		fields["price"] = item.Price
 	}
+
+	fields["status"] = "active"
 
 	whereClauses := []string{}
 	values := []interface{}{}
@@ -144,7 +146,7 @@ func (repo *ItemRepositoryDB) Search(item models.Item) ([]models.Item, error) {
 		return nil, errors.New("no fields to update")
 	}
 
-	sqlStatement := fmt.Sprintf("SELECT id, name, quantity, price FROM items WHERE %s AND status = 'active'", strings.Join(whereClauses, " AND "))
+	sqlStatement := fmt.Sprintf("SELECT id, name, quantity, price FROM items WHERE %s", strings.Join(whereClauses, " AND "))
 	rows, err := repo.DB.Query(sqlStatement, values...)
 	if err != nil {
 		return nil, err
