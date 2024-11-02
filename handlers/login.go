@@ -58,3 +58,18 @@ func LoginHandler(db *sql.DB) {
 	}
 	fmt.Println(string(responseJson))
 }
+
+func LogoutHandler() {
+	err := utils.DeleteSession()
+	if err != nil {
+		fmt.Println("Error deleting session: ", err)
+	}
+	fmt.Println("Logged out successfully")
+	response := models.Response{StatusCode: 200, Message: "Logged out successfully", Data: nil}
+	responseJson, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshaling JSON: ", err)
+	}
+	fmt.Println(string(responseJson))
+	os.Exit(0)
+}

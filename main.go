@@ -22,12 +22,13 @@ func main() {
 
 	if endpoint == "login" {
 		handlers.LoginHandler(db)
+	} else if endpoint == "logout" {
+		handlers.LogoutHandler()
 	} else {
 		user := utils.GetSession()
 		if user == nil {
-			fmt.Println("Unauthorized access. Only admin users can access this endpoint.")
+			return
 		} else if user.Role == "admin" {
-			fmt.Println("admin")
 			handlers.AdminHandler(db, endpoint)
 		} else if user.Role == "staff_warehouse" {
 			handlers.StaffHandler(db, endpoint)

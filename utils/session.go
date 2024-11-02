@@ -50,8 +50,33 @@ func GetSession() *models.User {
 			return nil
 		}
 	} else {
+		var response models.Response
+
 		fmt.Println("There is no body data in the file")
+		response = models.Response{StatusCode: 401, Message: "Unauthorized", Data: nil}
+		responseJson, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println("Error marshaling JSON: ", err)
+		} else {
+			fmt.Println(string(responseJson))
+		}
 	}
 
 	return &user
+}
+
+func DeleteSession() error {
+	file, err := os.OpenFile("session.json", os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write an empty array to the file
+	_, err = file.WriteString("")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
