@@ -164,14 +164,37 @@ func DeleteItemHandler(db *sql.DB) error {
 
 func GetItemsHandler(db *sql.DB) error {
 	var response models.Response
+	var pagination models.Pagination
 	repoDB := struct {
 		DB *sql.DB
 	}{
 		DB: db,
 	}
 
+	file, err := os.OpenFile("body.json", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println("Open file error message: ", err)
+		return err
+	}
+	defer file.Close()
+
+	// Check if the file is empty
+	fileInfo, err := file.Stat()
+	if err != nil {
+		fmt.Println("File stat error: ", err)
+		return err
+	}
+
+	if fileInfo.Size() > 0 {
+		decoder := json.NewDecoder(file)
+
+		if err := decoder.Decode(&pagination); err != nil && err != io.EOF {
+			fmt.Println("Decode error message: ", err)
+		}
+	}
+
 	itemService := services.NewItemService(repoDB)
-	items, err := itemService.GetItems()
+	items, err := itemService.GetItems(pagination)
 
 	if err != nil {
 		errMessage := fmt.Sprintf("Error getting items: %v", err)
@@ -238,7 +261,7 @@ func GetItemByIDHandler(db *sql.DB) error {
 	return nil
 }
 
-func SearchItemsHandler(db *sql.DB) error {
+func GetItemWithFilterHandler(db *sql.DB) error {
 	var item_input models.Item
 	var response models.Response
 	repoDB := struct {
@@ -270,9 +293,9 @@ func SearchItemsHandler(db *sql.DB) error {
 	}
 
 	itemService := services.NewItemService(repoDB)
-	itemsFound, err := itemService.SearchItems(item_input)
+	itemsFound, err := itemService.GetAllItemsWithFilter(item_input)
 	if err != nil {
-		errMessage := fmt.Sprintf("Error searching items: %v", err)
+		errMessage := fmt.Sprintf("Error GetAlling items: %v", err)
 		response = models.Response{StatusCode: 400, Message: errMessage, Data: nil}
 	} else {
 		errMessage := "Items retrieved successfully"

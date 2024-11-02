@@ -31,7 +31,7 @@ func main() {
 		} else if user.Role == "admin" {
 			handlers.AdminHandler(db, endpoint)
 		} else if user.Role == "staff_warehouse" {
-			handlers.StaffHandler(db, endpoint)
+			handlers.StaffHandler(db, endpoint, user.ID)
 		}
 	}
 }

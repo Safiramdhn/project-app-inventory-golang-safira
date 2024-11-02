@@ -5,6 +5,6 @@ type Repostories interface {
 	Update(interface{}) error
 	Delete(interface{}) error
 	GetByID(interface{}) (interface{}, error)
-	GetAll() ([]interface{}, error)
-	Search(interface{}) ([]interface{}, error)
+	GetAll(limit, offset int) ([]interface{}, error)
+	GetAllWithFilter(interface{}) ([]interface{}, error)
 }

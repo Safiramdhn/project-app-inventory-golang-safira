@@ -15,8 +15,10 @@ func NewItemService(itemRepo repositories.ItemRepositoryDB) *ItemService {
 	return &ItemService{ItemRepo: itemRepo}
 }
 
-func (s *ItemService) GetItems() ([]models.Item, error) {
-	return s.ItemRepo.GetAll()
+func (s *ItemService) GetItems(pagination models.Pagination) ([]models.Item, error) {
+	limit := pagination.PerPage
+	offset := (pagination.Page - 1) * pagination.PerPage
+	return s.ItemRepo.GetAll(limit, offset)
 }
 
 func (s *ItemService) GetItemByID(id int) (*models.Item, error) {
@@ -47,6 +49,8 @@ func (s *ItemService) DeleteItem(id int) error {
 	return s.ItemRepo.Delete(id)
 }
 
-func (s *ItemService) SearchItems(item models.Item) ([]models.Item, error) {
-	return s.ItemRepo.Search(item)
+func (s *ItemService) GetAllItemsWithFilter(item models.Item) ([]models.Item, error) {
+	limit := item.Pagination.PerPage
+	offset := (item.Pagination.Page - 1) * item.Pagination.PerPage
+	return s.ItemRepo.GetAllWithFilter(item, limit, offset)
 }

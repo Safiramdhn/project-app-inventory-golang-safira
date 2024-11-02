@@ -34,10 +34,26 @@ func (repo *ItemRepositoryDB) GetByID(id int) (*models.Item, error) {
 	return &item, nil
 }
 
-func (repo *ItemRepositoryDB) GetAll() ([]models.Item, error) {
+func (repo *ItemRepositoryDB) GetAll(limit, offset int) ([]models.Item, error) {
+	countSqlStatement := `SELECT count(*) FROM items`
+	var totalCount int
+	err := repo.DB.QueryRow(countSqlStatement).Scan(&totalCount)
+	if err != nil {
+		return nil, err
+	}
+
 	var items []models.Item
-	sqlStatement := `SELECT id, name, quantity, price FROM items WHERE status = 'active' ORDER BY created_at ASC`
-	rows, err := repo.DB.Query(sqlStatement)
+	var sqlStatement string
+	values := []interface{}{}
+
+	if limit > 0 {
+		sqlStatement = `SELECT id, name, quantity, price, category_id, location_id FROM items WHERE status = 'active' ORDER BY created_at ASC LIMIT $1 OFFSET $2`
+		values = append(values, limit, offset)
+	} else {
+		sqlStatement = `SELECT id, name, quantity, price, category_id, location_id FROM items WHERE status = 'active'`
+	}
+
+	rows, err := repo.DB.Query(sqlStatement, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +61,11 @@ func (repo *ItemRepositoryDB) GetAll() ([]models.Item, error) {
 
 	for rows.Next() {
 		var item models.Item
-		err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.Price)
+		item.Pagination.CountData = totalCount
+		item.Pagination.Page = offset
+		item.Pagination.PerPage = limit
+
+		err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.Price, &item.CategoryId, &item.LocationId)
 		if err != nil {
 			return nil, err
 		}
@@ -113,9 +133,10 @@ func (repo *ItemRepositoryDB) Delete(id int) error {
 	return err
 }
 
-func (repo *ItemRepositoryDB) Search(item models.Item) ([]models.Item, error) {
+func (repo *ItemRepositoryDB) GetAllWithFilter(item models.Item, limit, offset int) ([]models.Item, error) {
 	fields := make(map[string]interface{})
 
+	// Build filters based on the provided item fields
 	if item.Name != "" {
 		fields["name"] = "%" + item.Name + "%"
 	}
@@ -125,37 +146,63 @@ func (repo *ItemRepositoryDB) Search(item models.Item) ([]models.Item, error) {
 	if item.Price != 0 {
 		fields["price"] = item.Price
 	}
-
-	fields["status"] = "active"
+	fields["status"] = "active" // Ensure we only get active items
 
 	whereClauses := []string{}
 	values := []interface{}{}
 	index := 1
+
 	for field, value := range fields {
 		if field == "name" {
-			// Use LIKE for the "name" field
-			whereClauses = append(whereClauses, field+" LIKE $"+strconv.Itoa(index))
+			// Use LIKE for partial match on "name" field
+			whereClauses = append(whereClauses, fmt.Sprintf("%s LIKE $%d", field, index))
 		} else {
-			whereClauses = append(whereClauses, field+" = $"+strconv.Itoa(index))
+			whereClauses = append(whereClauses, fmt.Sprintf("%s = $%d", field, index))
 		}
 		values = append(values, value)
 		index++
 	}
 
-	if len(whereClauses) == 0 {
-		return nil, errors.New("no fields to update")
+	countSqlStatement := fmt.Sprintf(
+		"SELECT count(*) FROM items WHERE %s",
+		strings.Join(whereClauses, " AND "),
+	)
+	var totalCount int
+	err := repo.DB.QueryRow(countSqlStatement, values...).Scan(&totalCount)
+	if err != nil {
+		return nil, err
 	}
 
-	sqlStatement := fmt.Sprintf("SELECT id, name, quantity, price FROM items WHERE %s", strings.Join(whereClauses, " AND "))
+	var sqlStatement string
+	// Construct the SQL query with pagination
+	if limit > 0 {
+		sqlStatement = fmt.Sprintf(
+			"SELECT id, name, quantity, price, category_id, location_id FROM items WHERE %s ORDER BY created_at ASC LIMIT $%d OFFSET $%d",
+			strings.Join(whereClauses, " AND "),
+			index,
+			index+1,
+		)
+		values = append(values, limit, offset)
+
+	} else {
+		sqlStatement = fmt.Sprintf(
+			"SELECT id, name, quantity, price, category_id, location_id FROM items WHERE %s",
+			strings.Join(whereClauses, " AND "),
+		)
+	}
+
+	// Add limit and offset to the values
+
 	rows, err := repo.DB.Query(sqlStatement, values...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var items []models.Item
 	for rows.Next() {
 		var item models.Item
-		err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.Price)
+		err := rows.Scan(&item.ID, &item.Name, &item.Quantity, &item.Price, &item.CategoryId, &item.LocationId)
 		if err != nil {
 			return nil, err
 		}
