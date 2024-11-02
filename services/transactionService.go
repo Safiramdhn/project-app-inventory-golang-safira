@@ -42,22 +42,6 @@ func (service *Transaction) GetTransactionByID(id int) (*models.Transaction, err
 	return service.RepoTransaction.GetByID(id)
 }
 
-// func (service *Transaction) UpdateTransaction(transaction *models.Transaction) error {
-// 	if transaction.ID <= 0 {
-// 		return errors.New("invalid transaction ID")
-// 	}
-
-// 	return service.RepoTransaction.Update(transaction)
-// }
-
-// func (service *Transaction) DeleteTransaction(id int) error {
-// 	if id <= 0 {
-// 		return errors.New("invalid transaction ID")
-// 	}
-
-// 	return service.RepoTransaction.Delete(id)
-// }
-
 func (service *Transaction) GetAllTransactions(pagination models.Pagination) ([]models.Transaction, error) {
 	var limit, offset int
 	if pagination.PerPage != 0 {
