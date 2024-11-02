@@ -3,8 +3,8 @@ package models
 type Item struct {
 	ID         int        `json:"id"`
 	Name       string     `json:"name"`
-	CategoryId int        `json:"category_id"`
-	LocationId int        `json:"location_id"`
+	Category   Category   `json:"category"`
+	Location   Location   `json:"location"`
 	Quantity   int        `json:"quantity"`
 	Price      int        `json:"price"`
 	Pagination Pagination `json:"pagination,omitempty"`

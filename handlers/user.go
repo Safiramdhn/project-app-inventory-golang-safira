@@ -19,6 +19,10 @@ func AdminHandler(db *sql.DB, endpoint string) {
 		GetItemsHandler(db)
 	case "get_item_by_id":
 		GetItemByIDHandler(db)
+	case "create_location":
+		CreateLocationHandler(db)
+	case "create_category":
+		CreateCategoryHandler(db)
 	default:
 		fmt.Println("Invalid endpoint")
 		return

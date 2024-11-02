@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	// "strconv"
 	"strings"
 
@@ -131,22 +132,20 @@ func (repo *TransactionRepositoryDB) GetAllWithFilter(filter models.Transaction,
 
 	// Build filters based on the provided filter fields
 	if filter.AddedBy != 0 {
-		fields["added_by"] = filter.AddedBy
+		fields["t.added_by"] = filter.AddedBy
 	}
-
 	if filter.TransactionType != "" {
-		fields["type"] = filter.TransactionType
+		fields["t.type"] = filter.TransactionType
 	}
-
 	if filter.Item.Name != "" {
-		fields["name"] = "%" + filter.Item.Name + "%"
+		fields["i.name"] = "%" + filter.Item.Name + "%"
 	}
 
 	whereClauses := []string{}
 	values := []interface{}{}
 	index := 1
 	for field, value := range fields {
-		if field == "name" {
+		if field == "i.name" {
 			whereClauses = append(whereClauses, fmt.Sprintf("%s LIKE $%d", field, index))
 		} else {
 			whereClauses = append(whereClauses, fmt.Sprintf("%s = $%d", field, index))
@@ -155,12 +154,6 @@ func (repo *TransactionRepositoryDB) GetAllWithFilter(filter models.Transaction,
 		index++
 	}
 
-	// If no filters are specified, handle the error gracefully
-	if len(whereClauses) == 0 {
-		return nil, errors.New("no fields to filter")
-	}
-
-	// Query to get the total count of items that match the filters
 	countSqlStatement := fmt.Sprintf(
 		"SELECT count(*) FROM transactions t JOIN items i ON t.item_id = i.id WHERE %s",
 		strings.Join(whereClauses, " AND "),
@@ -171,27 +164,22 @@ func (repo *TransactionRepositoryDB) GetAllWithFilter(filter models.Transaction,
 		return nil, err
 	}
 
-	// Main query to get paginated results
+	// Build the main query with conditional LIMIT and OFFSET
 	var sqlStatement string
-	// index = 1 + len(fields) // Start index for the values array is the length of the fields map plus 1
 	if limit > 0 {
 		sqlStatement = fmt.Sprintf(
 			"SELECT t.id, t.type, i.id, i.name, i.price, t.quantity, t.total_price, t.timestamp, t.description "+
 				"FROM transactions t JOIN items i ON t.item_id = i.id WHERE %s ORDER BY t.created_at ASC LIMIT $%d OFFSET $%d",
 			strings.Join(whereClauses, " AND "),
-			index,
-			index+1,
+			index, index+1,
 		)
 		values = append(values, limit, offset)
 	} else {
 		sqlStatement = fmt.Sprintf(
 			"SELECT t.id, t.type, i.id, i.name, i.price, t.quantity, t.total_price, t.timestamp, t.description "+
-				"FROM transactions t JOIN items i ON t.item_id = i.id WHERE %s ORDER BY t.created_at ASC LIMIT $%d OFFSET $%d",
+				"FROM transactions t JOIN items i ON t.item_id = i.id WHERE %s ORDER BY t.created_at ASC",
 			strings.Join(whereClauses, " AND "),
-			index,
-			index+1,
 		)
-		values = append(values, limit, offset)
 	}
 
 	rows, err := repo.DB.Query(sqlStatement, values...)
@@ -205,7 +193,7 @@ func (repo *TransactionRepositoryDB) GetAllWithFilter(filter models.Transaction,
 		var transaction models.Transaction
 		transaction.Pagination.Page = filter.Pagination.Page
 		transaction.Pagination.PerPage = filter.Pagination.PerPage
-		transaction.Pagination.CountData = totalCount // Set the total count here
+		transaction.Pagination.CountData = totalCount
 		err := rows.Scan(&transaction.ID, &transaction.TransactionType, &transaction.Item.ID, &transaction.Item.Name, &transaction.Item.Price, &transaction.Quantity, &transaction.TotalPrice, &transaction.Timestamp, &transaction.Description)
 		if err != nil {
 			return nil, err
